@@ -1,6 +1,7 @@
 node_modules
 
 /node_modules
+/ToDoApp/node_module
 npm-debug.log
 .DS_Store
 /*.env
