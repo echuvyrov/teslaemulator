@@ -1,8 +1,41 @@
 <script>
     import axios from "axios";
 
+// Base everything black
+//$MT302,$PBSB,$W38B,$PRM31,$IN3PB
+// Base everything White
+//$MT302,$PPSW,$W38B,$PRM31,$IN3PB
+// Everything upgraded
+//$MT304,$PPMR,$SPT31,$W32P,$BC3R,$SLR1,$PL31,$PRM31,$IN3PW,$APPB,$APF2
+
     function convertOptionCodeToText(option_code) {
       var options = {
+          "PPMR": "Red Multi-Coat Paint",
+          "PPSW": "Premium White Paint",
+          "DV2W": "Rear Wheel Drive",
+          "DV4W": "All Wheel Drive",
+          "BC3R": "Red Brake Calipers",
+          "BC3B": "Base Brake Calipers",
+          "RF3G": "Glass Roof Model 3",
+          "COUS": "Country US",
+          "COFI": "Country Finland",
+          "COCH": "Country Switzerland",
+          "RENA": "Region North America",
+          "CH07": "Model 3 Charger 7kW",
+          "AU3P": "Model 3 Premium Audio",
+          "LTPB": "Premium Black Interior Trim",
+          "SU3C": "Model 3 Suspension ??",
+          "PC30": "Non-performance Chassis",
+          "PC31": "Performance Chassis",
+          "UT3P": "Model 3 Premium Headliner",
+          "AD15": "J1772",
+          "TW00": "No Towing Package",
+          "TW01": "Towing Package",
+          "REEU": "Region Europe",
+          "UTAB": "Alcantara Black Headliner",
+          "SP01": "Security Package",
+        "MDL3": "Model 3",
+        "MDLS": "Model S",
         "UTZW": "Light Headliner",
         "BR00": "No firmware limit",
         "BR03": "Firmware limit",
@@ -120,13 +153,15 @@
         "X024": "Performance Package",
         "X025": "No Performance Package",
         "DRLH": "Left Hand Drive",
+        "DRRH": "Right Hand Drive",
         "SP00": "No Security Package",
         "BS01": "Special Production Flag",
         "BS00": "General Production Flag",
         "FR04": "FR04",
         "X037": "Powerfolding Mirrors",
         "TR01": "Rear Facing Seats",
-        "APH3": "APH3",
+        "APH2": "Autopilot Hardware Version 2",
+        "APH3": "Autopilot Hardware Version 3",
         "X030": "Override: No Passive Entry Pkg",
         "FR03": "FR03",
         "QVPP": "Vegan Cream Seats",
@@ -164,32 +199,92 @@
         name: 'Tesla',
         data () {
             return {
-                ip: "",
-                input: {
-                    firstname: "",
-                    lastname: ""
-                },
+                vin: "",
+                state: "",
+                vehicleID: "",
+                token: "",
+                rawCodes: "",
                 response: "",
                 optionArray: [],
                 option_codes: []
             }
         },
         mounted() {
-            axios({ method: "GET", "url": "https://private-623898-modelsapi.apiary-mock.com/api/1/vehicles" }).then(result => {
-                this.ip = result.data.response[0].vin;
+            this.token = localStorage.getItem('token');
+            if(localStorage.getItem('token')==undefined){
+                axios({ method: "POST",
+                    "url": "https://cors-anywhere.herokuapp.com/https://owner-api.teslamotors.com/oauth/token",
+                    "data": {   "grant_type":"password",
+                                "client_id":"81527cff06843c8634fdc09e8ac0abefb46ac849f38fe1e431c2ef2106796384",
+                                "client_secret":"c7257eb71a564034f9419ee651c7d0e5f7aa6bfbd18bafb5c5c033b093bb2fa3",
+                                "email":"",
+                                "password":""
+                            },
+                    "headers": {
+                                    "Access-Control-Allow-Origin": "*"
+                                }
+                }).then(result => {
+                    this.token = result.data.access_token;
+                    localStorage.setItem('token', result.data.access_token);
+                }, error => {
+                    console.error(error);
+                });
+            }
+            axios({ method: "GET",
+                "url": "https://cors-anywhere.herokuapp.com/https://owner-api.teslamotors.com/api/1/vehicles",
+                "headers": {
+                                "Authorization": "Bearer "+localStorage.getItem('token')
+                            }
+            }).then(result => {
+                this.vin = result.data.response[0].vin;
+                this.state = result.data.response[0].state;
+                this.vehicleID = result.data.response[0].id;
+                localStorage.setItem('vehicleID', this.vehicleID);
+                this.rawCodes = result.data.response[0].option_codes;
                 this.option_codes = result.data.response[0].option_codes.split(',');
                 this.optionArray = [{'code':'code', 'label':'label'}];
                 for (var i = 0; i < this.option_codes.length; i++) {
-                  this.optionArray.push({'code':this.option_codes[i],'label':convertOptionCodeToText(this.option_codes[i])});
+                this.optionArray.push({'code':this.option_codes[i],'label':convertOptionCodeToText(this.option_codes[i])});
                 }
             }, error => {
                 console.error(error);
             });
+            // axios({ method: "GET", "url": "https://private-623898-modelsapi.apiary-mock.com/api/1/vehicles" }).then(result => {
+            //     this.vin = result.data.response[0].vin;
+            //     this.option_codes = result.data.response[0].option_codes.split(',');
+            //     this.optionArray = [{'code':'code', 'label':'label'}];
+            //     for (var i = 0; i < this.option_codes.length; i++) {
+            //       this.optionArray.push({'code':this.option_codes[i],'label':convertOptionCodeToText(this.option_codes[i])});
+            //     }
+            // }, error => {
+            //     console.error(error);
+            // });
         },
         methods: {
-            sendData() {
-                axios({ method: "POST", "url": "https://httpbin.org/post", "data": this.input, "headers": { "content-type": "application/json" } }).then(result => {
-                    this.response = result.data;
+            honk() {
+                console.log("honk");
+                axios({ method: "POST",
+                    "url": "https://cors-anywhere.herokuapp.com/https://owner-api.teslamotors.com/api/1/vehicles/"+this.vehicleID+"/command/honk_horn",
+                    "headers": {
+                                "Authorization": "Bearer "+localStorage.getItem('token')
+                                }
+                }).then(result => {
+                }, error => {
+                    console.error(error);
+                });
+            },
+            clearToken () {
+                localStorage.removeItem('token')
+                this.token = undefined
+            },
+            wake () {
+///
+                axios({ method: "POST",
+                    "url": "https://cors-anywhere.herokuapp.com/https://owner-api.teslamotors.comapi/1/vehicles/"+this.vehicleID+"/wake_up",
+                    "headers": {
+                                "Authorization": "Bearer "+localStorage.getItem('token')
+                                }
+                }).then(result => {
                 }, error => {
                     console.error(error);
                 });
@@ -200,10 +295,13 @@
 
 <template>
     <div class="hello">
-        <h1>Your Tesla VIN is {{ ip }}</h1>
-        <input type="text" v-model="input.firstname" placeholder="First Name" />
-        <input type="text" v-model="input.lastname" placeholder="Last Name" />
-        <button>Send</button>
+        <h1>Your Tesla VIN is {{ vin }}</h1>
+        <h1>Your Tesla token is {{ token }}</h1>
+        <h1>Your Tesla vehicle ID is {{ vehicleID }}</h1>
+        <h2>Your vehicle state is {{ state }}</h2>
+        <button v-if="this.state!='asleep'" v-on:click="honk()">Honk Horn</button>
+        <button v-on:click="clearToken()">Clear Token</button>
+        <button v-if="this.state=='asleep'" v-on:click="wake()">Wake</button>
         <br />
         <br />
         <table-component

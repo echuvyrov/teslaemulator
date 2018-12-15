@@ -1,11 +1,25 @@
 <template>
   <div id="app">
-  <router-link v-bind:to="'/'">Home</router-link>
-  <router-link v-bind:to="'/about'">About</router-link>
-  <router-link v-bind:to="'/param'">Param Link</router-link>
-  <router-link v-bind:to="'/tesla'">Tesla</router-link>
-  <!-- the router outlet, where all matched components would be viewed -->
-  <router-view></router-view>
+    <d-nav tabs>
+      <d-nav-item>
+        <router-link v-bind:to="'/'">Home</router-link>
+      </d-nav-item>
+      <d-nav-item>
+        <router-link v-bind:to="'/about'">About</router-link>
+      </d-nav-item>
+      <d-nav-item>
+        <router-link v-bind:to="'/param'">Param Link</router-link>
+      </d-nav-item>
+      <d-nav-item>
+        <router-link v-bind:to="'/tesla'">Tesla</router-link>
+      </d-nav-item>
+      <d-nav-item>
+        <router-link v-bind:to="'/teslacontrols'">Controls</router-link>
+      </d-nav-item>
+    </d-nav>
+
+    <!-- the router outlet, where all matched components would be viewed -->
+    <router-view></router-view>
   </div>
 </template>
 

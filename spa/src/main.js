@@ -23,11 +23,20 @@ import Hello from './components/HelloWorld'
 //import the about component
 import About from './components/About'
 
+import TeslaControls from './components/TeslaControls'
+
 import Param from './components/Param'
 
 //import paramdetails component
 import paramdetails from './components/paramdetails'
 
+import ShardsVue from 'shards-vue'
+
+// Import base styles (Bootstrap and Shards)
+import 'bootstrap/dist/css/bootstrap.css'
+import 'shards-ui/dist/css/shards.css'
+
+Vue.use(ShardsVue);
 //define your routes
 const routes = [
   //route for the home route of the web page
@@ -38,6 +47,8 @@ const routes = [
   { path: '/param', component: Param },
   //route for the Tesla route of the web page
   { path: '/tesla', component: Tesla },
+  //route for the TeslaControls route of the web page
+  { path: '/teslacontrols', component: TeslaControls },
   //route for the paramdetails passing in params
   { path: '/Paramdetails/:id', component: paramdetails, name: 'Paramdetails' }
 ]
